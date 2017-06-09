@@ -71,7 +71,8 @@ struct dtmf_config {
 };
 
 // struct for app configuration settings
-struct app_config { 
+struct app_config {
+	char *sip_realm;
 	char *sip_domain;
 	char *sip_user;
 	char *sip_password;
@@ -301,6 +302,7 @@ static void usage(int error)
 	puts  ("");
 	puts  ("Config file:");
 	puts  ("Mandatory options:");
+	puts  ("  sr=string   Set sip realm.");
 	puts  ("  sd=string   Set sip provider domain.");
 	puts  ("  su=string   Set sip username.");
 	puts  ("  sp=string   Set sip password.");
@@ -377,6 +379,13 @@ static void parse_config_file(char *cfg_file)
 			
 			// duplicate string for having own instance of it
 			char *arg_val = strdup(val);	
+			
+			// check for sip realm argument
+			if (!strcasecmp(arg, "sr")) 
+			{
+				app_cfg.sip_realm = trim_string(arg_val);
+				continue;
+			}
 			
 			// check for sip domain argument
 			if (!strcasecmp(arg, "sd")) 
@@ -629,7 +638,7 @@ static void register_sip(void)
 	cfg.id = pj_str(sip_user_url);
 	cfg.reg_uri = pj_str(sip_provider_url);
 	cfg.cred_count = 1;
-	cfg.cred_info[0].realm = pj_str(app_cfg.sip_domain);
+	cfg.cred_info[0].realm = pj_str(app_cfg.sip_realm);
 	cfg.cred_info[0].scheme = pj_str("digest");
 	cfg.cred_info[0].username = pj_str(app_cfg.sip_user);
 	cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
