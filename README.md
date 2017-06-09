@@ -8,6 +8,15 @@ updated 2017 06 10 by OLSSOO FACTORY
 norman.southcastle@gmail.com
 =================================================
 
+SIP 설정샘플
+
+```
+cat sipserv.cfg 
+sr=OLSSOO
+sd=101.250.108.143:55520
+su=3651
+sp=3651ok!
+```
 
 Sip-Tools - Automated calls and answering machine
 =================================================
