@@ -1,5 +1,5 @@
 
-Sip-Tools - Automated calls and answering machine
+Sip-Tools - 자동응답기
 
 major git https://github.com/fabianhu/SIP-Pi
 
