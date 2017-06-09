@@ -102,8 +102,28 @@ build directly on Raspberry Pi:
 ## 최신버젼의 pjsip 설치
 ## https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=178384
 
+1. Install dependencies
 ```bash
-sudo apt-get install subversion gobjc++
+sudo apt-get install libasound2-dev libssl-dev libv4l-dev libsdl2-dev libsdl2-gfx-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-net-dev libsdl2-ttf-dev libx264-dev libavformat-dev libavcodec-dev libavdevice-dev libavfilter-dev libavresample-dev libavutil-dev libavcodec-extra-56 libopus-dev libopencore-amrwb-dev libopencore-amrnb-dev libvo-amrwbenc-dev subversion gobjc++
+```
+
+2. Create a directory for the source code
+```bash
+mkdir -p ~/usr/src/olssoo && cd ~/usr/src/olssoo
+```
+
+3. Build and install OpenH264
+```bash
+wget https://github.com/cisco/openh264/archive/v1.6.0.tar.gz
+tar -xf v1.6.0.tar.gz
+cd openh264-1.6.0
+make
+sudo make install
+cd ..
+```
+
+4. Download and extract PJSIP source
+```bash
 svn checkout http://svn.pjsip.org/repos/pjproject/trunk
 cd trunk
 ./configure 
@@ -111,6 +131,142 @@ make dep
 make
 sudo make install
 ```
+
+5. Enable video support
+```bash
+pi@raspberrypi2b:~/software/source/pjproject-2.6 $ nano pjlib/include/pj/config_site.h
+pi@raspberrypi2b:~/software/source/pjproject-2.6 $ cat pjlib/include/pj/config_site.h
+#define PJMEDIA_HAS_VIDEO 1
+```
+
+6. Set compiler options
+```bash
+pi@raspberrypi2b:~/software/source/pjproject-2.6 $ nano user.mak
+pi@raspberrypi2b:~/software/source/pjproject-2.6 $ cat user.mak
+# You can create user.mak file in PJ root directory to specify
+# additional flags to compiler and linker. For example:
+export CFLAGS += -march=armv7-a -mfpu=neon-vfpv4 -ffast-math -mfloat-abi=hard
+export LDFLAGS +=
+```
+
+7. Modify third_party/build/os-auto.mak.in (ing)
+```bash
+pi@raspberrypi2b:~/software/source/pjproject-2.6 $ nano third_party/build/os-auto.mak.in
+pi@raspberrypi2b:~/software/source/pjproject-2.6 $ cat third_party/build/os-auto.mak.in
+
+ifneq (@ac_no_gsm_codec@,1)
+ifeq (@ac_external_gsm@,1)
+# External
+else
+DIRS += gsm
+endif
+endif
+
+ifneq (@ac_no_ilbc_codec@,1)
+DIRS += ilbc
+endif
+
+ifneq (@ac_no_speex_codec@,1)
+ifeq (@ac_external_speex@,1)
+# External speex
+else
+DIRS += speex
+endif
+endif
+
+ifneq (@ac_no_g7221_codec@,1)
+DIRS += g7221
+endif
+
+ifneq ($(findstring pa,@ac_pjmedia_snd@),)
+ifeq (@ac_external_pa@,1)
+# External PA
+else
+#DIRS += portaudio
+endif
+endif
+
+ifeq (@ac_external_srtp@,1)
+# External SRTP
+else
+DIRS += srtp
+
+ifeq (@ac_ssl_has_aes_gcm@,0)
+CIPHERS_SRC = crypto/cipher/aes.o crypto/cipher/aes_icm.o       \
+              crypto/cipher/aes_cbc.o
+HASHES_SRC  = crypto/hash/sha1.o crypto/hash/hmac.o       \
+         # crypto/hash/tmmhv2.o
+RNG_SRC     = crypto/rng/rand_source.o crypto/rng/prng.o    \
+         crypto/rng/ctr_prng.o
+else
+CIPHERS_SRC = crypto/cipher/aes_icm_ossl.o crypto/cipher/aes_gcm_ossl.o
+HASHES_SRC  = crypto/hash/hmac_ossl.o
+RNG_SRC     = crypto/rng/rand_source_ossl.o
+SRTP_OTHER_CFLAGS = -DOPENSSL
+endif
+
+
+endif
+
+ifeq (@ac_pjmedia_resample@,libresample)
+DIRS += resample
+endif
+
+ifneq (@ac_no_yuv@,1)
+ifeq (@ac_external_yuv@,1)
+# External yuv
+else
+DIRS += yuv
+endif
+endif
+
+ifneq (@ac_no_webrtc@,1)
+ifeq (@ac_external_webrtc@,1)
+# External webrtc
+else
+DIRS += webrtc
+WEBRTC_OTHER_CFLAGS = -fexceptions -DWEBRTC_POSIX=1 @ac_webrtc_cflags@
+#ifneq ($(findstring sse2,@ac_webrtc_instset@),)
+#    WEBRTC_SRC = \
+#             modules/audio_processing/aec/aec_core_sse2.o       \
+#         modules/audio_processing/aec/aec_rdft_sse2.o            \
+#         modules/audio_processing/aecm/aecm_core_c.o            \
+#         modules/audio_processing/ns/nsx_core_c.o                    \
+#         system_wrappers/source/cpu_features.o
+#else ifneq ($(findstring neon,@ac_webrtc_instset@),)
+WEBRTC_SRC = \
+    modules/audio_processing/aec/aec_core_neon.o               \
+    modules/audio_processing/aec/aec_rdft_neon.o               \
+    modules/audio_processing/aecm/aecm_core_c.o                \
+    modules/audio_processing/aecm/aecm_core_neon.o             \
+    modules/audio_processing/ns/nsx_core_c.o                   \
+    modules/audio_processing/ns/nsx_core_neon.o                \
+    common_audio/signal_processing/cross_correlation_neon.o    \
+    common_audio/signal_processing/downsample_fast_neon.o      \
+    common_audio/signal_processing/min_max_operations_neon.o
+WEBRTC_OTHER_CFLAGS += -DWEBRTC_HAS_NEON
+#else ifneq ($(findstring mips,@ac_webrtc_instset@),)
+#    WEBRTC_SRC = \
+#              modules/audio_processing/aec/aec_core_mips.o               \
+#         modules/audio_processing/aec/aec_rdft_mips.o               \
+#         modules/audio_processing/aecm/aecm_core_mips.o             \
+#         modules/audio_processing/ns/nsx_core_mips.o                \
+#         common_audio/signal_processing/cross_correlation_mips.o    \
+#         common_audio/signal_processing/downsample_fast_mips.o      \
+#         common_audio/signal_processing/min_max_operations_mips.o
+#
+#    WEBRTC_OTHER_CFLAGS += -DMIPS_FPU_LE
+#else # Generic fixed point
+#    WEBRTC_SRC = \
+#         modules/audio_processing/aecm/aecm_core_c.o                \
+#         modules/audio_processing/ns/nsx_core_c.o                   \
+#         common_audio/signal_processing/complex_fft.o
+#endif
+endif
+endif
+```
+
+
 
 You will have plenty of time to brew some coffe during `make`. Enjoy while waiting.
 
