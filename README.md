@@ -6,6 +6,17 @@ major git https://github.com/fabianhu/SIP-Pi
 updated 2017 06 10 by OLSSOO FACTORY
 
 norman.southcastle@gmail.com
+
+- 준비
+1. SIP 계정 (내선번호도 가능)
+2. 라즈베리 파이 2/3
+3. 사운드 파일 (wav형식)
+4. 1 ~ 9번 입력시 번호별 동작 계획(DTMF)
+
+- 설치순서
+1. PJSIP
+2. RAS-SIP-Pi
+
 =================================================
 
 SIP 설정샘플
