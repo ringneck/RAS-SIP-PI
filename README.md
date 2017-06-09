@@ -55,7 +55,9 @@ With the sample configuration you can have a blacklist and only the special (=bl
 * -s=int       _Silent mode (hide info messages) (0/1)_   
 
 ##Config file:   
-###Mandatory options:   
+###Mandatory options:  
+
+* sr=string   _Set sip realm._ 
 * sd=string   _Set sip provider domain._   
 * su=string   _Set sip username._   
 * sp=string   _Set sip password._   
@@ -87,16 +89,20 @@ Build PjSIP
 ===========
 build directly on Raspberry Pi:
 --------------------------
+
+## 최신버젼의 pjsip 설치
+## https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=178384
+
 ```bash
-cd ~/tmp # any temporary directory
-wget http://www.pjsip.org/release/2.1/pjproject-2.1.tar.bz2 
-tar xvfj pjproject-2.1.tar.bz2 
-cd pjproject-2.1.0/
-./configure --disable-video 
+sudo apt-get install subversion gobjc++
+svn checkout http://svn.pjsip.org/repos/pjproject/trunk
+cd trunk
+./configure 
 make dep 
 make
 sudo make install
 ```
+
 You will have plenty of time to brew some coffe during `make`. Enjoy while waiting.
 
 Cross build of PjSIP for Raspberry:
@@ -124,7 +130,9 @@ Make outgoing calls with your Pi.
 ##Usage:   
 * sipcall [options]   
 
-##Mandatory options:   
+##Mandatory options:  
+
+* sr=string   _Set sip realm._ 
 * -sd=string   _Set sip provider domain._   
 * -su=string   _Set sip username._   
 * -sp=string   _Set sip password._   
