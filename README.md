@@ -1,3 +1,14 @@
+
+Sip-Tools - Automated calls and answering machine
+
+major git https://github.com/fabianhu/SIP-Pi
+
+updated 2017 06 10 by OLSSOO FACTORY
+
+norman.southcastle@gmail.com
+=================================================
+
+
 Sip-Tools - Automated calls and answering machine
 =================================================
 - sipcall - Automated calls over SIP/VOIP with TTS
