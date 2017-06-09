@@ -1,5 +1,5 @@
 
-Sip-Tools - 자동응답기
+Sip-Tools - 라즈베리 파이를 SIP 자동응답기로 만드는 방법 (pjsip client 사용) 
 
 major git https://github.com/fabianhu/SIP-Pi
 
