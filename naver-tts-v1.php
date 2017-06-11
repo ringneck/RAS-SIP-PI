@@ -20,12 +20,13 @@
   curl_close ($ch);
   if($status_code == 200) {
     //echo $response;
-    // convert from mp3 to wav 8Khz, mono
-    shell_exec('sox tts.mp3 -c1 -r8000  tts.wav');
-    $fp = fopen("tts.wav", "w+");
+    $fp = fopen("intro.mp3", "w+");
     fwrite($fp, $response);
     fclose($fp);
-    echo "<a href='tts.wav'>TTS재생</a>";
+    // convert from mp3 to wav 8Khz, mono
+    shell_exec('rm -rf intro.mp3')
+    shell_exec('sox intro.mp3 -c1 -r8000  intro.wav');
+    //echo "<a href='intro.wav'>TTS재생</a>";
   } else {
     echo "Error 내용:".$response;
   }
