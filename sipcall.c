@@ -55,6 +55,7 @@ Lesser General Public License for more details.
 
 // struct for app configuration settings
 struct app_config { 
+	char *sip_realm;
 	char *sip_domain;
 	char *sip_user;
 	char *sip_password;
@@ -119,7 +120,7 @@ int main(int argc, char *argv[])
 	// parse arguments
 	parse_arguments(argc, argv);
 	
-	if (!app_cfg.sip_domain || !app_cfg.sip_user || !app_cfg.sip_password || !app_cfg.phone_number || !app_cfg.tts)
+	if (!app_cfg.sip_realm || !app_cfg.sip_domain || !app_cfg.sip_user || !app_cfg.sip_password || !app_cfg.phone_number || !app_cfg.tts)
 	{
 		// too few arguments specified - display usage info and exit app
 		usage(1);
@@ -167,6 +168,7 @@ static void usage(int error)
     puts  ("  sipcall [options]");
     puts  ("");
     puts  ("Mandatory options:");
+    puts  ("  -sr=string    Set sip realm.");
     puts  ("  -sd=string    Set sip provider domain.");
 	puts  ("  -su=string    Set sip username.");
 	puts  ("  -sp=string    Set sip password.");
@@ -284,7 +286,7 @@ static void register_sip(void)
 	cfg.id = pj_str(sip_user_url);
 	cfg.reg_uri = pj_str(sip_provider_url);
 	cfg.cred_count = 1;
-	cfg.cred_info[0].realm = pj_str(app_cfg.sip_domain);
+	cfg.cred_info[0].realm = pj_str(app_cfg.sip_realm);
 	cfg.cred_info[0].scheme = pj_str("digest");
 	cfg.cred_info[0].username = pj_str(app_cfg.sip_user);
 	cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
